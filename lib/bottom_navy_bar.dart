@@ -95,6 +95,7 @@ class BottomNavyBar extends StatelessWidget {
                   itemCornerRadius: itemCornerRadius,
                   animationDuration: animationDuration,
                   curve: curve,
+                  containerHeight: containerHeight,
                 ),
               );
             }).toList(),
@@ -113,6 +114,7 @@ class _ItemWidget extends StatelessWidget {
   final double itemCornerRadius;
   final Duration animationDuration;
   final Curve curve;
+  final double? containerHeight;
 
   const _ItemWidget({
     Key? key,
@@ -123,6 +125,7 @@ class _ItemWidget extends StatelessWidget {
     required this.itemCornerRadius,
     required this.iconSize,
     this.curve = Curves.linear,
+    this.containerHeight,
   }) : super(key: key);
 
   @override
@@ -135,22 +138,26 @@ class _ItemWidget extends StatelessWidget {
         height: double.maxFinite,
         duration: animationDuration,
         curve: curve,
-        decoration: BoxDecoration(
-          color: isSelected ? item.activeColor.withOpacity(0.2) : backgroundColor,
-          borderRadius: BorderRadius.circular(itemCornerRadius),
-        ),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          physics: NeverScrollableScrollPhysics(),
-          child: Container(
-            width: isSelected ? 130 : 50,
-            padding: EdgeInsets.symmetric(horizontal: 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                IconTheme(
+        // decoration: BoxDecoration(
+        //   color: isSelected ? item.activeColor.withOpacity(0.2) : backgroundColor,
+        //   borderRadius: BorderRadius.circular(itemCornerRadius),
+        // ),
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            if (isSelected)
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: item.leftSideActiveColor,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(itemCornerRadius),
+                    bottomLeft: Radius.circular(itemCornerRadius),
+                  ),
+                ),
+                child: IconTheme(
                   data: IconThemeData(
                     size: iconSize,
                     color: isSelected
@@ -161,24 +168,43 @@ class _ItemWidget extends StatelessWidget {
                   ),
                   child: item.icon,
                 ),
-                if (isSelected)
-                  Expanded(
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 4),
-                      child: DefaultTextStyle.merge(
-                        style: TextStyle(
-                          color: item.activeColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        maxLines: 1,
-                        textAlign: item.textAlign,
-                        child: item.title,
-                      ),
+              )
+            else
+              IconTheme(
+                data: IconThemeData(
+                  size: iconSize,
+                  color: isSelected
+                      ? item.activeColor.withOpacity(1)
+                      : item.inactiveColor == null
+                          ? item.activeColor
+                          : item.inactiveColor,
+                ),
+                child: item.icon,
+              ),
+            if (isSelected)
+              Expanded(
+                child: Container(
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: isSelected ? item.activeColor.withOpacity(0.2) : backgroundColor,
+                    borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(itemCornerRadius),
+                      bottomRight: Radius.circular(itemCornerRadius),
                     ),
                   ),
-              ],
-            ),
-          ),
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8).copyWith(left: 0),
+                  child: DefaultTextStyle.merge(
+                    style: TextStyle(
+                      color: item.activeColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    textAlign: item.textAlign,
+                    child: item.title,
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -191,6 +217,7 @@ class BottomNavyBarItem {
     required this.icon,
     required this.title,
     this.activeColor = Colors.blue,
+    this.leftSideActiveColor,
     this.textAlign,
     this.inactiveColor,
   });
@@ -204,6 +231,7 @@ class BottomNavyBarItem {
   /// The [icon] and [title] color defined when this item is selected. Defaults
   /// to [Colors.blue].
   final Color activeColor;
+  final Color? leftSideActiveColor;
 
   /// The [icon] and [title] color defined when this item is not selected.
   final Color? inactiveColor;
